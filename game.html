@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Khối Vuông Di Chuyển Với Nhảy Và Chướng Ngại Vật</title>
+  <script src="./lib/phaser.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(to top, #87CEEB, #ffffff);
+    }
+    #game-container {
+      position: relative;
+    }
+    #replayButton {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px 40px;
+      font-size: 24px;
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+    }
+    #replayButton:hover {
+      background-color: #cc0000;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <button id="replayButton" onclick="restartGame()">Replay</button>
+  </div>
+
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      parent: "game-container",
+      physics: {
+        default: 'arcade',
+        arcade: {
+          gravity: { y: 300 },
+          debug: false
+        }
+      },
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      }
+    };
+
+    let game = new Phaser.Game(config);
+
+    let player;
+    let cursors;
+    let obstacles;
+    let ground;
+    let score = 0;
+    let scoreText;
+    let gameOver = false;
+
+    function preload() {
+      this.load.image('tree', './imgs/tree.png');
+    }
+
+    function create() {
+      // Mặt đất
+      ground = this.add.rectangle(400, 580, 800, 40, 0x228B22);
+      this.physics.add.existing(ground, true);
+
+      // Player
+      player = this.add.rectangle(100, 500, 50, 50, 0x0000ff);
+      this.physics.add.existing(player);
+      player.body.setCollideWorldBounds(true);
+      player.body.setBounce(0.2);
+
+      this.physics.add.collider(player, ground);
+
+      // Nhóm chướng ngại vật
+      obstacles = this.physics.add.group();
+
+      // Bàn phím
+      cursors = this.input.keyboard.createCursorKeys();
+
+      // Tap toàn màn hình => jump
+      document.body.addEventListener('pointerdown', () => {
+        if (player.body.touching.down && !gameOver) {
+          player.body.setVelocityY(-300);
+        }
+      });
+
+      createObstacle.call(this);
+
+      // Điểm số
+      scoreText = this.add.text(800 - 16, 16, 'Điểm: 0', { fontSize: '32px', fill: '#ffffff' }).setOrigin(1, 0);
+
+      // Version
+      this.add.text(16, 580, 'v.0.1', { fontSize: '16px', fill: '#000000' });
+    }
+
+    function update() {
+      if (gameOver) return;
+
+      if (cursors.left.isDown) {
+        player.body.setVelocityX(-200);
+      } else if (cursors.right.isDown) {
+        player.body.setVelocityX(200);
+      } else {
+        player.body.setVelocityX(0);
+      }
+
+      if (cursors.up.isDown && player.body.touching.down) {
+        player.body.setVelocityY(-300);
+      }
+
+      this.physics.add.collider(player, obstacles, hitObstacle, null, this);
+
+      obstacles.getChildren().forEach(obstacle => {
+        if (obstacle.x < -obstacle.width) {
+          score += 1;
+          scoreText.setText('Điểm: ' + score);
+          obstacle.destroy();
+        }
+      });
+    }
+
+    function createObstacle() {
+      if (gameOver) return;
+      const x = 800 + Math.random() * 200;
+      const obstacle = this.add.image(x, 530, 'tree');
+      obstacles.add(obstacle);
+      this.physics.add.existing(obstacle);
+      obstacle.body.setVelocityX(-150);
+      obstacle.body.allowGravity = false;
+      obstacle.body.immovable = true;
+
+      this.time.delayedCall(Phaser.Math.Between(2000, 4000), createObstacle, [], this);
+    }
+
+    function hitObstacle(player, obstacle) {
+      this.physics.pause();
+      player.fillColor = 0xff0000;
+      gameOver = true;
+      document.getElementById('replayButton').style.display = 'block';
+
+      fetch("https://son.vn?save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score })
+      }).catch(err => console.error("Lỗi gửi điểm:", err));
+    }
+
+    function restartGame() {
+      window.location.reload();
+    }
+  </script>
+</body>
+</html>
