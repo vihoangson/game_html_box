@@ -1,3 +1,5 @@
+import { LogEventBox } from './LogEventBox.js';
+
 // Game Events
 export const GAME_EVENTS = {
     GAME_START: 'GAME_START',
@@ -19,6 +21,7 @@ class EventBus {
         }
         EventBus.instance = this;
         this.listeners = new Map();
+        this.logger = new LogEventBox();
     }
 
     on(event, callback) {
@@ -39,6 +42,9 @@ class EventBus {
     }
 
     emit(event, data) {
+        // Log the event
+        this.logger.addLogEntry(event, data);
+
         if (!this.listeners.has(event)) return;
 
         this.listeners.get(event).forEach(callback => {
