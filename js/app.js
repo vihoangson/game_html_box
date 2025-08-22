@@ -1,11 +1,12 @@
 import { gameConfig } from './config.js';
 import { Player } from './player.js';
 import { ObstacleManager } from './obstacle.js';
+import { BirdObstacleManager } from './BirdObstacleManager.js';
 import { ScoreManager } from './score.js';
 import { eventBus, GAME_EVENTS } from './EventBus.js';
 
 let game;
-let player, obstacleManager, scoreManager;
+let player, obstacleManager, birdManager, scoreManager;
 let ground;
 
 export function initGame() {
@@ -65,6 +66,7 @@ function startGame() {
 
 function preload() {
     this.load.image('tree', './imgs/tree.png');
+    this.load.image('bird', './imgs/bird.png');
 }
 
 function create() {
@@ -73,12 +75,24 @@ function create() {
 
     player = new Player(this, 100, 500);
     obstacleManager = new ObstacleManager(this);
+    birdManager = new BirdObstacleManager(this);
     scoreManager = new ScoreManager(this);
 
     this.physics.add.collider(player.sprite, ground);
+
+    // Collision với cây
     this.physics.add.collider(
         player.sprite,
         obstacleManager.getGroup(),
+        () => eventBus.emit(GAME_EVENTS.COLLISION_DETECTED),
+        null,
+        this
+    );
+
+    // Collision với chim
+    this.physics.add.collider(
+        player.sprite,
+        birdManager.getGroup(),
         () => eventBus.emit(GAME_EVENTS.COLLISION_DETECTED),
         null,
         this
@@ -93,6 +107,7 @@ function create() {
 function update() {
     player?.update();
     obstacleManager?.checkObstacles();
+    birdManager?.checkObstacles();
 }
 
 export function restartGame() {
