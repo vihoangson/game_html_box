@@ -4,7 +4,7 @@ import { eventBus, GAME_EVENTS } from './EventBus.js';
 export class BirdObstacleManager extends ObstacleManager {
     constructor(scene) {
         super(scene);
-        this.minHeight = 400;  // Độ cao tối thiểu
+        this.minHeight = 100;  // Độ cao tối thiểu
         this.maxHeight = 450;  // Độ cao tối đa
         this.birdSpeed = -200; // Tốc độ chim bay
     }
