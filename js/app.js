@@ -2,49 +2,53 @@ import { gameConfig } from './config.js';
 import { Player } from './player.js';
 import { ObstacleManager } from './obstacle.js';
 import { ScoreManager } from './score.js';
-import { eventBus } from './EventBus.js';
+import { eventBus, GAME_EVENTS } from './EventBus.js';
 
-let playerName = "Guest";
 let game;
 let player, obstacleManager, scoreManager;
-let ground, gameOver = false;
+let ground;
 
-// When clicking start
 export function initGame() {
     setupEventListeners();
     document.getElementById("startButton").addEventListener("click", () => {
-        playerName = document.getElementById("playerNameInput").value.trim() || "Guest";
+        const playerName = document.getElementById("playerNameInput").value.trim() || "Khách";
+        localStorage.setItem('playerName', playerName);
         document.getElementById("welcomeScreen").style.display = "none";
         startGame();
+    });
+
+    // Handle restart game
+    eventBus.on(GAME_EVENTS.GAME_RESTART, () => {
+        window.location.reload();
     });
 }
 
 function setupEventListeners() {
-    eventBus.on('SCORE_UPDATED', (score) => {
-        console.log(`Score updated: ${score}`);
-        // Có thể thêm hiệu ứng khi điểm số tăng
+    // Handle touch/click for jump
+    document.body.addEventListener('pointerdown', () => {
+        if (player?.sprite.body.touching.down) {
+            player.jump();
+        }
     });
 
-    eventBus.on('PLAYER_JUMP', (data) => {
+    // Setup debug logging
+    eventBus.on(GAME_EVENTS.SCORE_UPDATED, (data) => {
+        console.log(`Score updated: ${data.score}`);
+    });
+
+    eventBus.on(GAME_EVENTS.PLAYER_JUMP, (data) => {
         console.log(`Player jumped at position: ${data.x}, ${data.y}`);
-        // Có thể thêm hiệu ứng khi nhảy
     });
 
-    eventBus.on('PLAYER_DIE', (data) => {
+    eventBus.on(GAME_EVENTS.PLAYER_DIE, (data) => {
         console.log(`Player died at position: ${data.x}, ${data.y}`);
-        saveScore();
+        document.getElementById('replayButton').style.display = 'block';
     });
-}
 
-function saveScore() {
-    fetch("https://son.vn?save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            name: playerName,
-            score: scoreManager.getScore()
-        })
-    }).catch(err => console.error("Lỗi gửi điểm:", err));
+    eventBus.on(GAME_EVENTS.COLLISION_DETECTED, () => {
+        game.scene.scenes[0].physics.pause();
+        eventBus.emit(GAME_EVENTS.GAME_OVER);
+    });
 }
 
 function startGame() {
@@ -72,46 +76,25 @@ function create() {
     scoreManager = new ScoreManager(this);
 
     this.physics.add.collider(player.sprite, ground);
-
-    document.body.addEventListener('pointerdown', () => {
-        if (player.sprite.body.touching.down && !gameOver) {
-            player.sprite.body.setVelocityY(-300);
-        }
-    });
-
-    obstacleManager.createObstacle();
-
-    this.add.text(16, 580, 'v.0.1', { fontSize: '16px', fill: '#000000' });
-
     this.physics.add.collider(
         player.sprite,
         obstacleManager.getGroup(),
-        hitObstacle,
+        () => eventBus.emit(GAME_EVENTS.COLLISION_DETECTED),
         null,
         this
     );
+
+    this.add.text(16, 580, 'v.0.1', { fontSize: '16px', fill: '#000000' });
+
+    // Start spawning obstacles
+    eventBus.emit(GAME_EVENTS.GAME_START);
 }
 
 function update() {
-    if (gameOver) return;
-
-    player.update(gameOver);
-
-    obstacleManager.getGroup().getChildren().forEach(obstacle => {
-        if (obstacle.x < -obstacle.width) {
-            scoreManager.increment();
-            obstacle.destroy();
-        }
-    });
-}
-
-function hitObstacle() {
-    this.physics.pause();
-    player.die();
-    gameOver = true;
-    document.getElementById('replayButton').style.display = 'block';
+    player?.update();
+    obstacleManager?.checkObstacles();
 }
 
 export function restartGame() {
-    window.location.reload();
+    eventBus.emit(GAME_EVENTS.GAME_RESTART);
 }
