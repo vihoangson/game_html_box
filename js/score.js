@@ -1,3 +1,5 @@
+import { eventBus } from './EventBus.js';
+
 export class ScoreManager {
     constructor(scene) {
         this.score = 0;
@@ -11,6 +13,7 @@ export class ScoreManager {
     increment() {
         this.score += 1;
         this.scoreText.setText('Điểm: ' + this.score);
+        eventBus.emit('SCORE_UPDATED', this.score);
     }
 
     getScore() {

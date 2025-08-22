@@ -1,3 +1,5 @@
+import { eventBus } from './EventBus.js';
+
 export class Player {
     constructor(scene, x, y) {
         this.sprite = scene.add.rectangle(x, y, 50, 50, 0x0000ff);
@@ -19,11 +21,19 @@ export class Player {
         }
 
         if (this.cursors.up.isDown && this.sprite.body.touching.down) {
+            this.jump();
+        }
+    }
+
+    jump() {
+        if (this.sprite.body.touching.down) {
             this.sprite.body.setVelocityY(-300);
+            eventBus.emit('PLAYER_JUMP', { x: this.sprite.x, y: this.sprite.y });
         }
     }
 
     die() {
         this.sprite.fillColor = 0xff0000;
+        eventBus.emit('PLAYER_DIE', { x: this.sprite.x, y: this.sprite.y });
     }
 }

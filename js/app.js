@@ -2,6 +2,7 @@ import { gameConfig } from './config.js';
 import { Player } from './player.js';
 import { ObstacleManager } from './obstacle.js';
 import { ScoreManager } from './score.js';
+import { eventBus } from './EventBus.js';
 
 let playerName = "Guest";
 let game;
@@ -10,11 +11,40 @@ let ground, gameOver = false;
 
 // When clicking start
 export function initGame() {
+    setupEventListeners();
     document.getElementById("startButton").addEventListener("click", () => {
         playerName = document.getElementById("playerNameInput").value.trim() || "Guest";
         document.getElementById("welcomeScreen").style.display = "none";
         startGame();
     });
+}
+
+function setupEventListeners() {
+    eventBus.on('SCORE_UPDATED', (score) => {
+        console.log(`Score updated: ${score}`);
+        // Có thể thêm hiệu ứng khi điểm số tăng
+    });
+
+    eventBus.on('PLAYER_JUMP', (data) => {
+        console.log(`Player jumped at position: ${data.x}, ${data.y}`);
+        // Có thể thêm hiệu ứng khi nhảy
+    });
+
+    eventBus.on('PLAYER_DIE', (data) => {
+        console.log(`Player died at position: ${data.x}, ${data.y}`);
+        saveScore();
+    });
+}
+
+function saveScore() {
+    fetch("https://son.vn?save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: playerName,
+            score: scoreManager.getScore()
+        })
+    }).catch(err => console.error("Lỗi gửi điểm:", err));
 }
 
 function startGame() {
@@ -80,15 +110,6 @@ function hitObstacle() {
     player.die();
     gameOver = true;
     document.getElementById('replayButton').style.display = 'block';
-
-    fetch("https://son.vn?save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            name: playerName,
-            score: scoreManager.getScore()
-        })
-    }).catch(err => console.error("Lỗi gửi điểm:", err));
 }
 
 export function restartGame() {
