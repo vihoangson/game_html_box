@@ -98,7 +98,7 @@ function create() {
         this
     );
 
-    this.add.text(16, 580, 'v.0.1', { fontSize: '16px', fill: '#000000' });
+    this.add.text(16, 580, 'v.0.2', { fontSize: '16px', fill: '#000000' });
 
     // Start spawning obstacles
     eventBus.emit(GAME_EVENTS.GAME_START);
