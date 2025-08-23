@@ -6,8 +6,8 @@ export const gameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 300 },
-            debug: false
+            gravity: { y: 400 },
+            debug: true
         }
     },
     scale: {

@@ -71,9 +71,15 @@ export class LogEventBox {
         logBox.insertBefore(entry, controls.nextSibling);
 
         // Limit entries
-        const entries = logBox.querySelectorAll('.log-entry');
+        let entries = logBox.querySelectorAll('.log-entry');
         while (entries.length > this.maxEntries) {
-            logBox.removeChild(entries[entries.length - 1]);
+            const lastEntry = logBox.querySelector('.log-entry:last-child');
+            if (lastEntry && logBox.contains(lastEntry)) {
+                logBox.removeChild(lastEntry);
+            } else {
+                break;
+            }
+            entries = logBox.querySelectorAll('.log-entry');
         }
     }
 }

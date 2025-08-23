@@ -8,6 +8,7 @@ export class Player {
         this.sprite.body.setCollideWorldBounds(true);
         this.sprite.body.setBounce(0.2);
         this.cursors = scene.input.keyboard.createCursorKeys();
+        this.jumpCount = 0; // Số lần nhảy hiện tại
 
         // Listen to game over event
         eventBus.on(GAME_EVENTS.GAME_OVER, () => this.onGameOver());
@@ -27,14 +28,30 @@ export class Player {
             this.sprite.body.setVelocityX(0);
         }
 
-        if (this.cursors.up.isDown && this.sprite.body.touching.down) {
+        if (this.cursors.up.isDown && this.canJump()) {
             this.jump();
+        }
+        // Reset jumpCount nếu chạm đất
+        if (this.sprite.body.touching.down) {
+            this.jumpCount = 0;
         }
     }
 
+    canJump() {
+        // Cho phép nhảy nếu đang chạm đất hoặc đã nhảy < 2 lần
+        return this.sprite.body.touching.down || this.jumpCount < 2;
+    }
+
     jump() {
-        if (this.sprite.body.touching.down) {
-            this.sprite.body.setVelocityY(-300);
+        if (this.canJump()) {
+            if (this.sprite.body.touching.down) {
+                // Nhảy lần đầu
+                this.sprite.body.setVelocityY(-300);
+            } else if (this.jumpCount === 1) {
+                // Nhảy lần hai, cao hơn
+                this.sprite.body.setVelocityY(-400);
+            }
+            this.jumpCount++;
             eventBus.emit(GAME_EVENTS.PLAYER_JUMP, { x: this.sprite.x, y: this.sprite.y });
         }
     }
