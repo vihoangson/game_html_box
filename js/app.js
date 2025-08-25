@@ -106,7 +106,6 @@ function create() {
 
 function update() {
     player?.update();
-    obstacleManager?.checkObstacles();
     birdManager?.checkObstacles();
 }
 

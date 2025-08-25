@@ -1,33 +1,38 @@
-import { ObstacleManager } from './obstacle.js';
 import { eventBus, GAME_EVENTS } from './EventBus.js';
 
-export class BirdObstacleManager extends ObstacleManager {
+export class BirdObstacleManager {
     constructor(scene) {
-        super(scene);
+        this.scene = scene;
+        this.obstacles = scene.physics.add.group();
         this.minHeight = 100;  // Độ cao tối thiểu
         this.maxHeight = 450;  // Độ cao tối đa
         this.birdSpeed = -200; // Tốc độ chim bay
+
+        // Listen to game events
+        eventBus.on(GAME_EVENTS.GAME_OVER, () => this.onGameOver());
+        eventBus.on(GAME_EVENTS.GAME_START, () => this.startSpawning());
+    }
+
+    startSpawning() {
+        this.isGameOver = false;
+        this.createObstacle();
     }
 
     createObstacle() {
         const x = 800 + Math.random() * 200;
-        // Random độ cao cho chim
         const y = this.minHeight + Math.random() * (this.maxHeight - this.minHeight);
 
-        // Tạo chim
         const bird = this.scene.add.sprite(x, y, 'bird');
         this.obstacles.add(bird);
         this.scene.physics.add.existing(bird);
 
-        // Cấu hình physics cho chim
         bird.body.setVelocityX(this.birdSpeed);
-        bird.body.allowGravity = false;  // Chim không bị ảnh hưởng bởi trọng lực
+        bird.body.allowGravity = false;
         bird.body.immovable = true;
 
-        // Animation đơn giản cho chim (nếu sprite sheet có nhiều frame)
         this.scene.tweens.add({
             targets: bird,
-            y: y + 30,  // Di chuyển lên xuống 30px
+            y: y + 30,
             duration: 1500,
             yoyo: true,
             repeat: -1,
@@ -36,24 +41,34 @@ export class BirdObstacleManager extends ObstacleManager {
 
         eventBus.emit(GAME_EVENTS.OBSTACLE_CREATED, { type: 'bird', x, y });
 
-        // Lên lịch tạo chim tiếp theo
-        this.scene.time.delayedCall(
-            Phaser.Math.Between(3000, 6000),  // Thời gian spawn lâu hơn cây
-            () => {
-                if (!this.isGameOver) {
-                    this.createObstacle();
-                }
-            },
-            [],
-            this
-        );
+        if (!this.isGameOver) {
+            this.scene.time.delayedCall(
+                Phaser.Math.Between(3000, 6000),
+                () => this.createObstacle(),
+                [],
+                this
+            );
+        }
+    }
+
+    checkObstacles() {
+        this.obstacles.getChildren().forEach(bird => {
+            if (bird.x < -bird.width) {
+                eventBus.emit(GAME_EVENTS.OBSTACLE_REMOVED, { obstacle: bird });
+                bird.destroy();
+            }
+        });
+    }
+
+    getGroup() {
+        return this.obstacles;
     }
 
     onGameOver() {
-        super.onGameOver();
-        // Dừng animation của tất cả các chim
+        this.isGameOver = true;
         this.obstacles.getChildren().forEach(bird => {
-            this.scene.tweens.killTweensOf(bird);
+            bird.body.setVelocityX(0);
+            bird.body.setVelocityY(0);
         });
     }
 }

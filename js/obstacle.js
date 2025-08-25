@@ -11,50 +11,33 @@ export class ObstacleManager {
     }
 
     startSpawning() {
-        this.createObstacle();
+        // Tạo các obstacle cố định
+        this.createFixedObstacles();
     }
 
-    createObstacle() {
-        const x = 800 + Math.random() * 200;
-        const obstacle = this.scene.add.image(x, 530, 'tree');
-        this.obstacles.add(obstacle);
-        this.scene.physics.add.existing(obstacle);
-        obstacle.body.setVelocityX(-150);
-        obstacle.body.allowGravity = false;
-        obstacle.body.immovable = true;
+    createFixedObstacles() {
+        // Tạo các obstacle ở các vị trí cố định
+        const positions = [
+            {x: 300, y: 530},
+            {x: 500, y: 530},
+            {x: 700, y: 530}
+        ];
 
-        eventBus.emit(GAME_EVENTS.OBSTACLE_CREATED, { x, y: 530 });
-
-        // Schedule next obstacle if game is still running
-        this.scene.time.delayedCall(
-            Phaser.Math.Between(2000, 4000),
-            () => {
-                if (!this.isGameOver) {
-                    this.createObstacle();
-                }
-            },
-            [],
-            this
-        );
-    }
-
-    checkObstacles() {
-        this.obstacles.getChildren().forEach(obstacle => {
-            if (obstacle.x < -obstacle.width) {
-                eventBus.emit(GAME_EVENTS.OBSTACLE_REMOVED, { obstacle });
-                obstacle.destroy();
-            }
-        });
-    }
-
-    onGameOver() {
-        this.isGameOver = true;
-        this.obstacles.getChildren().forEach(obstacle => {
-            obstacle.body.setVelocityX(0);
+        positions.forEach(pos => {
+            const obstacle = this.scene.add.image(pos.x, pos.y, 'tree');
+            this.obstacles.add(obstacle);
+            this.scene.physics.add.existing(obstacle);
+            obstacle.body.allowGravity = false;
+            obstacle.body.immovable = true;
+            eventBus.emit(GAME_EVENTS.OBSTACLE_CREATED, { x: pos.x, y: pos.y });
         });
     }
 
     getGroup() {
         return this.obstacles;
+    }
+
+    onGameOver() {
+        this.isGameOver = true;
     }
 }
