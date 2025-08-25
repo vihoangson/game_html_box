@@ -4,9 +4,10 @@ import { ObstacleManager } from './obstacle.js';
 import { BirdObstacleManager } from './BirdObstacleManager.js';
 import { ScoreManager } from './score.js';
 import { eventBus, GAME_EVENTS } from './EventBus.js';
+import { VirtualJoystick } from './joystick.js';
 
 let game;
-let player, obstacleManager, birdManager, scoreManager;
+let player, obstacleManager, birdManager, scoreManager, joystick;
 let ground;
 let currentLevel = 1;
 let levelText;
@@ -81,6 +82,11 @@ function create() {
     birdManager = new BirdObstacleManager(this);
     scoreManager = new ScoreManager(this);
 
+    // Khởi tạo joystick cho mobile
+    if (this.sys.game.device.input.touch) {
+        joystick = new VirtualJoystick(this);
+    }
+
     this.physics.add.collider(player.sprite, ground);
 
     // Collision với cây
@@ -110,21 +116,16 @@ function create() {
 }
 
 function update() {
-    player?.update();
+    // Cập nhật player với input từ joystick
+    player?.update(joystick?.getDirection());
     birdManager?.checkObstacles();
 
     // Kiểm tra vị trí player để chuyển màn (5/6 màn hình)
     if (player && player.sprite.x >= (gameConfig.width * 5/6) && !isChangingLevel) {
         isChangingLevel = true;
-        // Reset vận tốc của player
         player.sprite.body.setVelocityX(0);
-        // Tạm dừng physics
         this.physics.pause();
-
-        // Emit event level complete
         eventBus.emit(GAME_EVENTS.LEVEL_COMPLETE, { level: currentLevel });
-
-        // Tăng level và reset màn chơi
         currentLevel++;
         resetLevel.call(this);
     }
