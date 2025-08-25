@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Khối Vuông Di Chuyển Với Nhảy Và Chướng Ngại Vật</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Trò chơi nhảy vượt chướng ngại vật</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div id="welcomeScreen">
-    <h1>Chào mừng đến với Jump Game !</h1>
-    <input type="text" id="playerNameInput" placeholder="Nhập tên của bạn" value="Khách">
-    <button id="startButton">Bắt đầu chơi</button>
-  </div>
+    <div id="welcomeScreen">
+        <h1>Chào mừng đến với Jump Game!</h1>
+        <input type="text" id="playerNameInput" placeholder="Nhập tên của bạn" value="Khách">
+        <button id="startButton">Bắt đầu chơi</button>
+    </div>
 
-  <div id="game-container">
-    <button id="replayButton" onclick="restartGame()">Chơi lại !</button>
-  </div>
+    <div id="game-container">
+        <button id="replayButton" style="display: none;">Chơi lại!</button>
+    </div>
 
-  <script src="lib/phaser.min.js"> </script>
-  <script type="module">
-    import { initGame, restartGame } from './js/app.js';
-    window.restartGame = restartGame;
-    initGame();
-  </script>
+    <script src="lib/phaser.min.js"></script>
+    <script type="module">
+        import { initGame } from './js/app.js';
+        initGame();
+    </script>
+    <script type="module">
+        import { restartGame } from './js/app.js';
+        window.restartGame = restartGame;
+    </script>
 </body>
 </html>

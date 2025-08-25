@@ -8,6 +8,9 @@ import { eventBus, GAME_EVENTS } from './EventBus.js';
 let game;
 let player, obstacleManager, birdManager, scoreManager;
 let ground;
+let currentLevel = 1;
+let levelText;
+let isChangingLevel = false;
 
 export function initGame() {
     setupEventListeners();
@@ -98,6 +101,8 @@ function create() {
         this
     );
 
+    // Hiển thị level hiện tại
+    levelText = this.add.text(16, 550, `Level ${currentLevel}`, { fontSize: '24px', fill: '#000000' });
     this.add.text(16, 580, 'v.0.2', { fontSize: '16px', fill: '#000000' });
 
     // Start spawning obstacles
@@ -107,8 +112,78 @@ function create() {
 function update() {
     player?.update();
     birdManager?.checkObstacles();
+
+    // Kiểm tra vị trí player để chuyển màn (5/6 màn hình)
+    if (player && player.sprite.x >= (gameConfig.width * 5/6) && !isChangingLevel) {
+        isChangingLevel = true;
+        // Reset vận tốc của player
+        player.sprite.body.setVelocityX(0);
+        // Tạm dừng physics
+        this.physics.pause();
+
+        // Emit event level complete
+        eventBus.emit(GAME_EVENTS.LEVEL_COMPLETE, { level: currentLevel });
+
+        // Tăng level và reset màn chơi
+        currentLevel++;
+        resetLevel.call(this);
+    }
+}
+
+function resetLevel() {
+    // Hiệu ứng fade out
+    this.cameras.main.fadeOut(500);
+
+    // Đợi hiệu ứng fade out hoàn thành
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+        // Xóa các obstacles hiện tại
+        obstacleManager.getGroup().clear(true, true);
+        birdManager.getGroup().clear(true, true);
+
+        // Reset vị trí player
+        player.sprite.setPosition(100, 500);
+
+        // Cập nhật text hiển thị level
+        if (levelText) {
+            levelText.setText(`Level ${currentLevel}`);
+        }
+
+        // Hiển thị thông báo level mới
+        const levelAnnouncement = this.add.text(400, 300, `Level ${currentLevel}`, {
+            fontSize: '48px',
+            fill: '#000000'
+        });
+        levelAnnouncement.setOrigin(0.5);
+
+        // Hiệu ứng cho text level mới
+        this.tweens.add({
+            targets: levelAnnouncement,
+            scaleX: 1.2,
+            scaleY: 1.2,
+            duration: 500,
+            yoyo: true,
+            repeat: 0,
+            onComplete: () => {
+                levelAnnouncement.destroy();
+                // Sau khi hoàn thành animation, reset trạng thái
+                isChangingLevel = false;
+            }
+        });
+
+        // Khởi động lại physics sau một khoảng thời gian ngắn
+        this.time.delayedCall(1000, () => {
+            this.physics.resume();
+            // Tạo obstacles mới cho level mới
+            obstacleManager.startSpawning();
+            birdManager.startSpawning();
+        });
+
+        // Hiệu ứng fade in
+        this.cameras.main.fadeIn(500);
+    });
 }
 
 export function restartGame() {
+    currentLevel = 1;
     eventBus.emit(GAME_EVENTS.GAME_RESTART);
 }
