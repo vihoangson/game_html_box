@@ -13,3 +13,6 @@ scp -r dist/* root@188.166.213.71:/var/www/vhosts/fun.io.vn/public/
 scp -r lib/phaser.min.js root@188.166.213.71:/var/www/vhosts/fun.io.vn/public/lib/
 scp -r css/* root@188.166.213.71:/var/www/vhosts/fun.io.vn/public/css/
 scp -r imgs/* root@188.166.213.71:/var/www/vhosts/fun.io.vn/public/imgs/
+
+# Copy .htaccess file
+scp public/.htaccess root@188.166.213.71:/var/www/vhosts/fun.io.vn/public/
