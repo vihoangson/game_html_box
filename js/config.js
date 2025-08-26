@@ -70,13 +70,20 @@ export const gameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0 },
+            gravity: { y: 400 },
             debug: false
         }
     },
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 800,
+        height: 600
     },
-    scene: MainScene
+    scene: MainScene,
+    backgroundColor: '#87CEEB', // Thêm màu nền để dễ nhìn hơn
+    dom: {
+        createContainer: true
+    },
+    autoRound: false
 };

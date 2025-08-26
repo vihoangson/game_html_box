@@ -47,7 +47,7 @@ export class ScoreManager {
         document.getElementById('game-container').appendChild(replayButton);
 
         replayButton.addEventListener('click', () => {
-            this.restartGame();
+            window.location.reload(); // Thay đổi từ restartGame() thành reload()
         });
 
         this.replayButton = replayButton;
@@ -117,9 +117,7 @@ export class ScoreManager {
         if (this.replayButton) {
             this.replayButton.style.display = 'none';
         }
-        if (this.scene && this.scene.scene) {
-            this.scene.scene.restart();
-        }
+        window.location.reload(); // Thêm reload ở đây để đảm bảo mọi cách restart đều reload
     }
 
     updateScoreDisplay() {
