@@ -1,7 +1,7 @@
 <template>
   <div class="score-display">
     <div class="current-score">
-      <h3>Current Score: {{ Math.floor(currentPoints) }}</h3>
+      <h3>Current Score: {{ currentPoints }}</h3>
       <h4>High Score: {{ highScore }}</h4>
     </div>
 
@@ -9,7 +9,7 @@
       <h4>History</h4>
       <ul class="list-group">
         <li v-for="(score, index) in pointHistory" :key="index" class="list-group-item">
-          <span class="score">{{ Math.floor(score.score) }}</span>
+          <span class="score">{{ score.score }}</span>
           <small class="date">{{ new Date(score.date).toLocaleString() }}</small>
         </li>
       </ul>
@@ -33,6 +33,7 @@ export default {
     const store = useStore()
 
     return {
+      // Các getters đã được làm tròn từ store
       currentPoints: computed(() => store.getters['point/getCurrentPoints']),
       highScore: computed(() => store.getters['point/getHighScore']),
       pointHistory: computed(() => store.getters['point/getPointHistory'])
