@@ -1,5 +1,6 @@
 <template>
-  <div id="game">
+  <div class="game-wrapper">
+    <ScoreDisplay :showHistory="true" />
     <div id="game-container"></div>
   </div>
 </template>
@@ -8,9 +9,13 @@
 import { onMounted } from 'vue'
 import Phaser from 'phaser'
 import { gameConfig } from '../../js/config'
+import ScoreDisplay from '../components/ScoreDisplay.vue'
 
 export default {
   name: 'GameView',
+  components: {
+    ScoreDisplay
+  },
   setup() {
     onMounted(() => {
       const game = new Phaser.Game(gameConfig)

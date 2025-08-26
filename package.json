@@ -11,7 +11,8 @@
     "express": "^4.18.2",
     "phaser": "^3.60.0",
     "vue": "^3.3.4",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.3.4",

@@ -1,11 +1,9 @@
 import { eventBus, GAME_EVENTS } from './EventBus.js';
+import store from '../src/store';
 
 export class ScoreManager {
     constructor(scene) {
         this.scene = scene;
-        this.score = 0;
-        this.highScore = parseInt(localStorage.getItem('highScore')) || 0;
-        this.isGameRunning = false;
 
         // Create score text
         this.scoreText = scene.add.text(16, 16, 'Score: 0', {
@@ -14,7 +12,7 @@ export class ScoreManager {
         });
 
         // Create high score text
-        this.highScoreText = scene.add.text(16, 56, `High Score: ${this.highScore}`, {
+        this.highScoreText = scene.add.text(16, 56, `High Score: ${store.getters['point/getHighScore']}`, {
             fontSize: '24px',
             fill: '#666'
         });
@@ -31,33 +29,31 @@ export class ScoreManager {
         // Listen to game events
         eventBus.on(GAME_EVENTS.GAME_OVER, () => this.onGameOver());
         eventBus.on(GAME_EVENTS.GAME_START, () => this.startScoring());
+
+        // Start game in store
+        store.dispatch('point/startGame');
     }
 
     startScoring() {
-        this.score = 0;
-        this.isGameRunning = true;
+        store.dispatch('point/startGame');
         this.gameOverText.visible = false;
         this.updateScoreDisplay();
     }
 
     update() {
-        if (this.isGameRunning) {
-            this.score += 0.1;
+        if (store.getters['point/isGameActive']) {
+            store.dispatch('point/incrementPoints', 0.1);
             this.updateScoreDisplay();
         }
     }
 
     onGameOver() {
-        this.isGameRunning = false;
-        if (this.score > this.highScore) {
-            this.highScore = Math.floor(this.score);
-            localStorage.setItem('highScore', this.highScore);
-            this.highScoreText.setText(`High Score: ${this.highScore}`);
-        }
+        store.dispatch('point/endGame');
         this.gameOverText.visible = true;
+        this.highScoreText.setText(`High Score: ${store.getters['point/getHighScore']}`);
     }
 
     updateScoreDisplay() {
-        this.scoreText.setText(`Score: ${Math.floor(this.score)}`);
+        this.scoreText.setText(`Score: ${Math.floor(store.getters['point/getCurrentPoints'])}`);
     }
 }
