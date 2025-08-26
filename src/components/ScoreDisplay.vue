@@ -1,5 +1,5 @@
 <template>
-  <div class="score-display">
+  <div class="score-display" v-if="!isMobile">
     <div class="current-score">
       <h3>Current Score: {{ currentPoints }}</h3>
       <h4>High Score: {{ highScore }}</h4>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default {
@@ -31,12 +31,34 @@ export default {
   },
   setup() {
     const store = useStore()
+    const isMobile = ref(checkMobile())
+
+    function checkMobile() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        || window.innerWidth <= 768
+        || ('ontouchstart' in window)
+        || (navigator.maxTouchPoints > 0)
+        || (navigator.msMaxTouchPoints > 0);
+    }
+
+    // Lắng nghe sự kiện resize để cập nhật trạng thái mobile
+    function handleResize() {
+      isMobile.value = checkMobile()
+    }
+
+    onMounted(() => {
+      window.addEventListener('resize', handleResize)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('resize', handleResize)
+    })
 
     return {
-      // Các getters đã được làm tròn từ store
       currentPoints: computed(() => store.getters['point/getCurrentPoints']),
       highScore: computed(() => store.getters['point/getHighScore']),
-      pointHistory: computed(() => store.getters['point/getPointHistory'])
+      pointHistory: computed(() => store.getters['point/getPointHistory']),
+      isMobile
     }
   }
 }
@@ -47,11 +69,12 @@ export default {
   position: fixed;
   top: 70px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 15px;
   border-radius: 8px;
   z-index: 1000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 .current-score {
