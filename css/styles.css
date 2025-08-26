@@ -22,24 +22,39 @@ body {
 }
 
 #replayButton {
-    display: none;
     position: absolute;
-    top: 50%;
+    top: 55%;
     left: 50%;
     transform: translate(-50%, -50%);
-    padding: 20px 40px;
+    padding: 15px 30px;
     font-size: 24px;
-    background-color: #ff4444;
+    background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     cursor: pointer;
-    z-index: 10;
-    box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    animation: fadeInButton 0.5s ease-out;
 }
 
 #replayButton:hover {
-    background-color: #cc0000;
+    background-color: #45a049;
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeInButton {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 /* Welcome screen */

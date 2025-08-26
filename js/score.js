@@ -11,6 +11,9 @@ export class ScoreManager {
 
         // Start game in store
         store.dispatch('point/startGame');
+
+        // Create replay button (hidden initially)
+        this.createReplayButton();
     }
 
     createTextObjects() {
@@ -27,7 +30,7 @@ export class ScoreManager {
         });
 
         // Create game over text (hidden initially)
-        this.gameOverText = this.scene.add.text(400, 300, 'GAME OVER\nPress SPACE or Click to restart', {
+        this.gameOverText = this.scene.add.text(400, 300, 'GAME OVER', {
             fontSize: '48px',
             fill: '#000',
             align: 'center'
@@ -36,8 +39,21 @@ export class ScoreManager {
         this.gameOverText.visible = false;
     }
 
+    createReplayButton() {
+        const replayButton = document.createElement('button');
+        replayButton.id = 'replayButton';
+        replayButton.textContent = 'Play Again';
+        replayButton.style.display = 'none';
+        document.getElementById('game-container').appendChild(replayButton);
+
+        replayButton.addEventListener('click', () => {
+            this.restartGame();
+        });
+
+        this.replayButton = replayButton;
+    }
+
     setupEventListeners() {
-        // Store event listeners for cleanup
         this.gameOverHandler = () => this.onGameOver();
         this.startScoringHandler = () => this.startScoring();
 
@@ -47,22 +63,26 @@ export class ScoreManager {
         // Add scene shutdown listener
         this.scene.events.on('shutdown', () => this.cleanup());
         this.scene.events.on('destroy', () => this.cleanup());
+
+        // Add keyboard listener for restart
+        this.scene.input.keyboard.on('keydown-SPACE', () => {
+            if (!store.getters['point/isGameActive']) {
+                this.restartGame();
+            }
+        });
     }
 
     cleanup() {
-        // Remove event listeners
         eventBus.off(GAME_EVENTS.GAME_OVER, this.gameOverHandler);
         eventBus.off(GAME_EVENTS.GAME_START, this.startScoringHandler);
 
-        // Destroy text objects if they exist
-        if (this.scoreText && !this.scoreText.scene) this.scoreText.destroy();
-        if (this.highScoreText && !this.highScoreText.scene) this.highScoreText.destroy();
-        if (this.gameOverText && !this.gameOverText.scene) this.gameOverText.destroy();
-
-        // Clear references
-        this.scoreText = null;
-        this.highScoreText = null;
-        this.gameOverText = null;
+        if (this.scoreText && this.scoreText.scene) this.scoreText.destroy();
+        if (this.highScoreText && this.highScoreText.scene) this.highScoreText.destroy();
+        if (this.gameOverText && this.gameOverText.scene) this.gameOverText.destroy();
+        if (this.replayButton) {
+            this.replayButton.remove();
+            this.replayButton = null;
+        }
     }
 
     startScoring() {
@@ -72,16 +92,10 @@ export class ScoreManager {
         if (this.gameOverText && this.gameOverText.scene) {
             this.gameOverText.visible = false;
         }
-        this.updateScoreDisplay();
-    }
-
-    update() {
-        if (!this.scene || !this.scene.scene.isActive()) return;
-
-        if (store.getters['point/isGameActive']) {
-            store.dispatch('point/incrementPoints', 0.1);
-            this.updateScoreDisplay();
+        if (this.replayButton) {
+            this.replayButton.style.display = 'none';
         }
+        this.updateScoreDisplay();
     }
 
     onGameOver() {
@@ -94,11 +108,32 @@ export class ScoreManager {
         if (this.highScoreText && this.highScoreText.scene) {
             this.highScoreText.setText(`High Score: ${store.getters['point/getHighScore']}`);
         }
+        if (this.replayButton) {
+            this.replayButton.style.display = 'block';
+        }
+    }
+
+    restartGame() {
+        if (this.replayButton) {
+            this.replayButton.style.display = 'none';
+        }
+        if (this.scene && this.scene.scene) {
+            this.scene.scene.restart();
+        }
     }
 
     updateScoreDisplay() {
         if (!this.scene || !this.scene.scene.isActive() || !this.scoreText || !this.scoreText.scene) return;
 
         this.scoreText.setText(`Score: ${Math.floor(store.getters['point/getCurrentPoints'])}`);
+    }
+
+    update() {
+        if (!this.scene || !this.scene.scene.isActive()) return;
+
+        if (store.getters['point/isGameActive']) {
+            store.dispatch('point/incrementPoints', 0.1);
+            this.updateScoreDisplay();
+        }
     }
 }
