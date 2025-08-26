@@ -1,18 +1,39 @@
 export class LogEventBox {
     constructor() {
+        // Kiểm tra mobile trước khi tạo box
+        if (this.isMobileDevice()) {
+            return; // Không tạo event box trên mobile
+        }
         this.createLogBox();
         this.maxEntries = 100;
         this.isMinimized = false;
     }
 
+    isMobileDevice() {
+        const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            || window.innerWidth <= 768
+            || ('ontouchstart' in window)
+            || (navigator.maxTouchPoints > 0)
+            || (navigator.msMaxTouchPoints > 0);
+        return mobile;
+    }
+
     createLogBox() {
+        // Kiểm tra nếu đã tồn tại thì xóa
+        const existingBox = document.getElementById('logEventBox');
+        if (existingBox) {
+            existingBox.remove();
+        }
+
         const box = document.createElement('div');
         box.id = 'logEventBox';
         box.style.position = 'fixed';
-        box.style.bottom = '0';
-        box.style.left = '0';
-        box.style.right = '0';
-        box.style.zIndex = '1000';
+        box.style.right = '20px';
+        box.style.bottom = '20px';
+        box.style.width = '300px';
+        box.style.maxHeight = '300px';
+        box.style.zIndex = '9999';
+        box.style.display = this.isMobileDevice() ? 'none' : 'block';
 
         // Tạo controls
         const controls = document.createElement('div');
@@ -49,24 +70,36 @@ export class LogEventBox {
 
         this.logBox = box;
         this.logContent = logContent;
+
+        // Thêm listener cho resize window
+        window.addEventListener('resize', () => {
+            if (this.logBox) {
+                this.logBox.style.display = this.isMobileDevice() ? 'none' : 'block';
+            }
+        });
     }
 
     clearLogs() {
-        const logBox = document.getElementById('logEventBox');
-        const controls = logBox.querySelector('.log-controls');
-        while (logBox.lastChild) {
-            logBox.removeChild(logBox.lastChild);
+        if (!this.logBox) return;
+        const controls = this.logBox.querySelector('.log-controls');
+        while (this.logBox.lastChild) {
+            this.logBox.removeChild(this.logBox.lastChild);
         }
-        logBox.appendChild(controls);
+        this.logBox.appendChild(controls);
     }
 
     toggleMinimize() {
+        if (!this.logBox) return;
         this.isMinimized = !this.isMinimized;
         this.logContent.style.display = this.isMinimized ? 'none' : 'block';
     }
 
     addLogEntry(eventName, data) {
+        if (!this.logBox || this.isMobileDevice()) return;
+
         const logBox = document.getElementById('logEventBox');
+        if (!logBox) return;
+
         const entry = document.createElement('div');
         entry.className = 'log-entry';
 
