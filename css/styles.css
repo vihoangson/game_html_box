@@ -225,13 +225,12 @@ body {
 }
 
 /* Mobile styles */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     #logEventBox {
-        width: 250px;
-        right: 10px;
-        bottom: 10px;
+        display: none !important; /* Ẩn event log trên mobile */
     }
 
+    /* Các styles mobile khác */
     #welcomeScreen {
         padding: 20px;
     }
@@ -258,7 +257,11 @@ body {
 }
 
 /* Small screens */
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
+    #logEventBox {
+        display: none !important; /* Đảm bảo ẩn trên màn hình nhỏ */
+    }
+
     #welcomeScreen h1 {
         font-size: 20px;
     }
