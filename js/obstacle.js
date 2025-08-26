@@ -4,6 +4,9 @@ export class ObstacleManager {
     constructor(scene) {
         this.scene = scene;
         this.obstacles = scene.physics.add.group();
+        this.gameSpeed = 300;
+        this.spawnTimer = null;
+        this.isGameRunning = false;
 
         // Listen to game events
         eventBus.on(GAME_EVENTS.GAME_OVER, () => this.onGameOver());
@@ -11,33 +14,53 @@ export class ObstacleManager {
     }
 
     startSpawning() {
-        // Tạo các obstacle cố định
-        this.createFixedObstacles();
+        this.isGameRunning = true;
+        this.spawnTimer = this.scene.time.addEvent({
+            delay: 2000,
+            callback: this.spawnObstacle,
+            callbackScope: this,
+            loop: true
+        });
     }
 
-    createFixedObstacles() {
-        // Tạo các obstacle ở các vị trí cố định
-        const positions = [
-            {x: 300, y: 530},
-            {x: 500, y: 530},
-            {x: 700, y: 530}
-        ];
+    onGameOver() {
+        this.isGameRunning = false;
+        if (this.spawnTimer) {
+            this.spawnTimer.destroy();
+        }
+        this.obstacles.clear(true, true);
+    }
 
-        positions.forEach(pos => {
-            const obstacle = this.scene.add.image(pos.x, pos.y, 'tree');
-            this.obstacles.add(obstacle);
-            this.scene.physics.add.existing(obstacle);
-            obstacle.body.allowGravity = false;
-            obstacle.body.immovable = true;
-            eventBus.emit(GAME_EVENTS.OBSTACLE_CREATED, { x: pos.x, y: pos.y });
-        });
+    spawnObstacle() {
+        if (!this.isGameRunning) return;
+
+        const obstacle = this.scene.add.image(800, 530, 'tree');
+        this.obstacles.add(obstacle);
+        this.scene.physics.add.existing(obstacle);
+        obstacle.body.allowGravity = false;
+        obstacle.body.immovable = true;
+        obstacle.body.velocity.x = -this.gameSpeed;
+
+        // Destroy obstacle when it goes off screen
+        obstacle.checkWorldBounds = true;
+        obstacle.outOfBoundsKill = true;
+
+        eventBus.emit(GAME_EVENTS.OBSTACLE_CREATED, { x: obstacle.x, y: obstacle.y });
+    }
+
+    update() {
+        // Increase game speed over time
+        if (this.isGameRunning) {
+            this.gameSpeed += 0.01;
+            this.obstacles.children.iterate((obstacle) => {
+                if (obstacle && obstacle.body) {
+                    obstacle.body.velocity.x = -this.gameSpeed;
+                }
+            });
+        }
     }
 
     getGroup() {
         return this.obstacles;
-    }
-
-    onGameOver() {
-        this.isGameOver = true;
     }
 }
