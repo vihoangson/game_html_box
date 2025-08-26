@@ -8,6 +8,11 @@ export class LogEventBox {
     createLogBox() {
         const box = document.createElement('div');
         box.id = 'logEventBox';
+        box.style.position = 'fixed';
+        box.style.bottom = '0';
+        box.style.left = '0';
+        box.style.right = '0';
+        box.style.zIndex = '1000';
 
         // Tạo controls
         const controls = document.createElement('div');
@@ -23,18 +28,27 @@ export class LogEventBox {
         clearBtn.textContent = 'Clear';
         clearBtn.onclick = () => this.clearLogs();
 
-        const toggleBtn = document.createElement('button');
-        toggleBtn.textContent = '▼';
-        toggleBtn.onclick = () => this.toggleMinimize();
+        const minimizeBtn = document.createElement('button');
+        minimizeBtn.textContent = '-';
+        minimizeBtn.onclick = () => this.toggleMinimize();
 
         buttonGroup.appendChild(clearBtn);
-        buttonGroup.appendChild(toggleBtn);
+        buttonGroup.appendChild(minimizeBtn);
 
         controls.appendChild(title);
         controls.appendChild(buttonGroup);
 
+        // Create log content container
+        const logContent = document.createElement('div');
+        logContent.id = 'logContent';
+
         box.appendChild(controls);
+        box.appendChild(logContent);
+
         document.body.appendChild(box);
+
+        this.logBox = box;
+        this.logContent = logContent;
     }
 
     clearLogs() {
@@ -47,11 +61,8 @@ export class LogEventBox {
     }
 
     toggleMinimize() {
-        const logBox = document.getElementById('logEventBox');
         this.isMinimized = !this.isMinimized;
-        logBox.classList.toggle('minimized');
-        const toggleBtn = logBox.querySelector('.log-controls button:last-child');
-        toggleBtn.textContent = this.isMinimized ? '▲' : '▼';
+        this.logContent.style.display = this.isMinimized ? 'none' : 'block';
     }
 
     addLogEntry(eventName, data) {

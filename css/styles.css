@@ -89,30 +89,40 @@ body {
 
 #logEventBox {
     position: fixed;
-    left: 10px;
-    top: 10px;
-    width: 300px;
-    height: 400px;
+    left: 0;
+    bottom: 0;  /* Thay đổi từ top thành bottom */
+    width: 100%;
+    max-height: 200px;
     background: rgba(0, 0, 0, 0.8);
-    color: #00ff00;
+    color: white;
     font-family: monospace;
     padding: 10px;
-    border-radius: 5px;
-    z-index: 9999; /* Tăng z-index để hiển thị trên mọi element */
+    border-radius: 5px 5px 0 0;  /* Chỉ bo góc phía trên */
+    z-index: 9999;
     overflow-y: auto;
     font-size: 12px;
+    box-sizing: border-box;
 }
 
 .log-controls {
     position: sticky;
     top: 0;
     background: rgba(0, 0, 0, 0.9);
-    padding: 5px 0;
+    padding: 5px 10px;
     margin-bottom: 10px;
     border-bottom: 1px solid #333;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.log-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .log-controls button {
@@ -125,8 +135,18 @@ body {
     font-size: 11px;
 }
 
+.log-controls button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    margin-left: 5px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
 .log-controls button:hover {
-    background: #444;
+    background: rgba(255, 255, 255, 0.3);
 }
 
 #logEventBox.minimized {
@@ -134,43 +154,43 @@ body {
     overflow: hidden;
 }
 
-#logEventBox .log-entry {
-    margin: 5px 0;
-    padding: 3px 0;
-    border-bottom: 1px solid #333;
+.log-entry {
+    padding: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 12px;
 }
 
-#logEventBox .log-entry .timestamp {
+.log-entry .timestamp {
     color: #888;
-    margin-right: 8px;
+    margin-right: 10px;
 }
 
-#logEventBox .log-entry .event-name {
-    color: #ff9900;
-    font-weight: bold;
+.log-entry .event-name {
+    color: #4CAF50;
+    margin-right: 10px;
 }
 
-#logEventBox .log-entry .event-data {
-    color: #00ff00;
-    margin-left: 8px;
+.log-entry .event-data {
+    color: #64B5F6;
 }
 
-/* Scroll bar styling */
+#logContent {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for the log box */
 #logEventBox::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 #logEventBox::-webkit-scrollbar-track {
-    background: #333;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 #logEventBox::-webkit-scrollbar-thumb {
-    background: #666;
-    border-radius: 3px;
-}
-
-#logEventBox::-webkit-scrollbar-thumb:hover {
-    background: #888;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
 }
 
 /* Mobile Responsive */

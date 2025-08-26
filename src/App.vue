@@ -1,29 +1,18 @@
 <template>
   <div id="app">
-    <div id="game-container"></div>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import { onMounted } from 'vue'
-import Phaser from 'phaser'
-import { gameConfig } from '../js/config'
-
 export default {
-  name: 'App',
-  setup() {
-    onMounted(() => {
-      const game = new Phaser.Game(gameConfig)
-    })
-  }
+  name: 'App'
 }
 </script>
 
 <style>
-#game-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+#app {
+  width: 100%;
   height: 100vh;
 }
 </style>

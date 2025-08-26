@@ -1,9 +1,14 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/GG/',  // Add this line to match your deployment path
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './')
+    }
+  },
   server: {
     port: 3000
   },
